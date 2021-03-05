@@ -33,17 +33,23 @@ clean:
 	rm -f *.o *.exe $(TARGET)
 ```
 
-and to compile it, simply we can type like this :
+to compile it, simply we can type like this :
 ```
 Nubletz /d/sp/02-gcc/05-make/01-makeExe (master) $ make
 gcc -std=c99 -O0 sum.c main.c -o run
 ```
-and to run the executable program we can type like this (e.x the file name is run.exe) :
+to run the executable program we can type like this (e.x the file name is run.exe) :
 ```
 Nubletz /d/sp/02-gcc/05-make/01-makeExe (master) $ ./run
 sum(10)=55
 ```
 
+and last for cleaning our example editor we need to type:
+```
+Nubletz /d/sp/02-gcc/05-make/01-makeExe (master) $ make clean
+rm -f *.o *.exe run
+```
+this way the targeted file has been removed from your directory
 
 Reference :
 
