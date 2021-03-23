@@ -19,11 +19,11 @@ int main() {
 
 <br>
 
-<img src="saveTokens.jpg" alt="save tokens" title="Save Tokens" height="400">
+<img src="saveTokens2.jpg" alt="save tokens" title="Save Tokens" height="400">
 
->the image above show how tokens was saved in array and memory. As you can see, in memory the address looks not in order because it need a space depend on the value stored in it. each character need 1 byte of memory.
+> The image above show how tokens was saved in array and memory. As you can see, in memory the address looks not in order because for every variable stored in it need a space depend on it's size. In this case each character need space 1 byte of memory. So if token "int" is saved at memory address 100, because it has 3 characters so the next token will be saved at 104.
 
-after lexing the code, we will get a sequence of tokens like this
+after lexing the code, if we try to print the tokens we will get a sequence of tokens like this :
 ```
 token=#
 token=include
@@ -50,3 +50,8 @@ token=)
 token=;
 token=}
 ```
+
+---
+<br>
+
+## Notes for C
