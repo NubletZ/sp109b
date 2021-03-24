@@ -18,7 +18,7 @@ The term syntax come from Greek, means "arrange together". It refers to the arra
 1. first the parser will send request for token to the lexer.
 2. The lexer then will scan input until it finds the next token and returns it into parser.
 
-Lexer will skips whitespaces and comments. If it detect any error, the it will correlate that error with the source file and line number.
+Lexer will skips whitespaces and comments. If it detect any error, it will correlate that error with the source file and line number.
 
 ### Formal Methods of Describing Syntax
 
@@ -67,4 +67,12 @@ BNF
 EBNF
 <expr> ::= <term> {(+|-)<term>}
 <term> ::= <factor> {(*|/) <factor>}
+```
+```
+BNF
+<signed int> ::= + <int> | - <int>
+<int> ::= <digit> | <int> <digit>
+
+EBNF
+<signed int> ::= [+|-] <digit> {<digit>}*
 ```
