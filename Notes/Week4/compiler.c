@@ -13,10 +13,10 @@ int tempIdx = 0, labelIdx = 0;
 #define emit printf
 
 int isNext(char *set) {
-  char eset[SMAX], etoken[SMAX];
-  sprintf(eset, " %s ", set);
-  sprintf(etoken, " %s ", tokens[tokenIdx]);
-  return (tokenIdx < tokenTop && strstr(eset, etoken) != NULL);
+  char eset[SMAX], etoken[SMAX]; // SMAX = 100000, defined in compiler.h
+  sprintf(eset, " %s ", set); //put set into eset
+  sprintf(etoken, " %s ", tokens[tokenIdx]); //put tokens[tokenIdx] into etoken
+  return (tokenIdx < tokenTop && strstr(eset, etoken) != NULL); //strstr(eset, etoken) will try to find whether eset contain etoken or not
 }
 
 int isEnd() {
@@ -45,7 +45,7 @@ int F() {
     f = E();
     next(); // )
   } else { // Number | Id
-    f = nextTemp();
+    f = nextTemp(); //tempIdx++
     char *item = next();
     emit("t%d = %s\n", f, item);
   }
@@ -76,13 +76,13 @@ void ASSIGN() {
 
 // WHILE = while (E) STMT
 void WHILE() {
-  int whileBegin = nextLabel();
-  int whileEnd = nextLabel();
+  int whileBegin = nextLabel(); //labelIdx++
+  int whileEnd = nextLabel(); //labelIdx++
   emit("(L%d)\n", whileBegin);
   skip("while");
   skip("(");
   int e = E();
-  emit("if not T%d goto L%d\n", e, whileEnd);
+  emit("if not t%d goto L%d\n", e, whileEnd);
   skip(")");
   STMT();
   emit("goto L%d\n", whileBegin);
@@ -90,24 +90,32 @@ void WHILE() {
 }
 
 // if (EXP) STMT (else STMT)?
+int ifEnd = 2; // to define only one gate to go to the last line of code
 void IF() {
-  int ifBigin = nextLabel();
-  int ifMid = nextLabel();
-  int ifEnd = nextLabel();
-  emit("(L%d)\n",ifBigin);
+  if (labelIdx == 0){ // only will print "(L0)" at the first line of parse
+    int ifBegin = nextLabel(); //labelIdx++
+    emit("(L%d)\n",ifBegin);
+  }
+  int ifMid = nextLabel(); //labelIdx++
+  if (labelIdx <= 2){
+    ifEnd = nextLabel(); //labelIdx++
+  }
   skip("if");
   skip("(");
   int e= E();
-  emit("if not t%d goto L%d\n",e,ifMid);
+  emit("[mid] if not t%d goto L%d\n",e,ifMid);
   skip(")");
   STMT();
-  emit("goto L%d\n",ifEnd);
-  emit("(L%d)\n", ifMid);
+  emit("[end] goto L%d\n",ifEnd);
+  emit("[mid] (L%d)\n", ifMid);
   if (isNext("else")) {
     skip("else");
     //emit("if L%d goto L%d\n",ifMid,ifEnd);
     STMT();
-    emit("(L%d)\n",ifEnd);
+  }
+  if(ifEnd == 2){
+    emit("[end](L%d)",ifEnd);
+    ifEnd = 0;
   }
 }
 
@@ -118,6 +126,7 @@ void FOR() {
 }
 
 // STMT = WHILE | BLOCK | ASSIGN
+// STMT stand for statment
 void STMT() {
   if (isNext("while"))
     return WHILE();

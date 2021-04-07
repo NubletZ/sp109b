@@ -9,7 +9,10 @@ char strTable[TMAX], *strTableEnd=strTable;
 char *tokens[TMAX], tokenTop=0, tokenIdx=0, token[LMAX];
 
 char *scan() {
-  while (isspace(*p)) p++;
+  while (isspace(*p)){
+    p++;
+    //printf("ENTER ISSPACE\n");
+  }
 
   char *start = p;
   int type;
@@ -48,9 +51,12 @@ void lex(char *code) {
     char *tok = scan();
     if (tok == NULL) break;
     strcpy(strTableEnd, tok);
-    tokens[tokenTop++] = strTableEnd;  //count the tokenTop
+    //int i = tokenTop;
+    tokens[tokenTop++] = strTableEnd;  //increase the NEXT tokenTop value and put the strTableEnd value into tokens
+    //printf("tokens[tokenTop++] = ");
+    //puts(tokens[i]);
     strTableEnd += (strlen(tok)+1);
     printf("token=%s\n", tok);
   }
-  printf("\ntokenTop=%d\n", tokenTop);
+  printf("\ntotal token = %d\n", tokenTop);
 }
