@@ -55,3 +55,10 @@ token=}
 <br>
 
 ## Notes for C
+```
+fopen(filename, file access mode);
+```
+The file access mode can be :
+* "r" read : to open file for input operations, in this mode the file must exist.
+* "w" write : to create an empty file for output operations. If the filename already exist then it will discard its content and write the output in it.
+* "a" append : to open file for output at the end of file. The file is created if it does not exist.
