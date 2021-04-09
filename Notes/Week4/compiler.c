@@ -40,14 +40,24 @@ char *skip(char *set) {
 // F = (E) | Number | Id
 int F() {
   int f;
+  //emit("this is F function\n");
   if (isNext("(")) { // '(' E ')'
     next(); // (
     f = E();
     next(); // )
-  } else { // Number | Id
+  }
+  else { // Number | Id | Increment | Decrement
     f = nextTemp(); //tempIdx++
     char *item = next();
-    emit("t%d = %s\n", f, item);
+    if (isNext("++")) {
+      next();
+      emit("%s = %s + 1\n", item, item);
+    }
+    else if (isNext("--")) {
+      next();
+      emit("%s = %s - 1\n", item, item);
+    }
+    else emit("t%d = %s\n", f, item);
   }
   return f;
 }
@@ -83,6 +93,7 @@ void WHILE() {
   skip("(");
   int e = E();
   emit("if not t%d goto L%d\n", e, whileEnd);
+  F();
   skip(")");
   STMT();
   emit("goto L%d\n", whileBegin);
@@ -97,8 +108,8 @@ void IF() {
     emit("(L%d)\n",ifBegin);
   }
   int ifMid = nextLabel(); //labelIdx++
-  if (labelIdx <= 2){
-    ifEnd = nextLabel(); //labelIdx++
+  if (labelIdx <= 2){ //to skip 2 from ifMid, because it's already been used by ifEnd
+    nextLabel(); //labelIdx++
   }
   skip("if");
   skip("(");
@@ -120,9 +131,20 @@ void IF() {
 }
 
 void FOR() {
+  int forBegin = nextLabel(); // mark label for the loop start point
+  int forEnd = nextLabel(); // mark label for the end of loop
   skip("for");
   skip("(");
-  
+  ASSIGN(); // read for the initialization statement
+  emit("(L%d)\n", forBegin);
+  int e = E(); // read for the test expression
+  emit("if not t%d, goto L%d\n", e, forEnd);
+  skip(";");
+  F(); // read for the update statement
+  skip(")");
+  STMT(); // read the content in curl bracket
+  emit("goto L%d\n", forBegin);
+  emit("(L%d)\n", forEnd);
 }
 
 // STMT = WHILE | BLOCK | ASSIGN
