@@ -3,7 +3,17 @@
 In compiler, the parser will obtain a string of tokens from lexical analyzer. It then will verifies whether the string can be the grammar for the source language or not.
 
 ## Practice writing a simple parser
-In this practice I used program refer to [ccc109-compiler2](https://gitlab.com/ccc109/sp/-/tree/master/03-compiler/03b-compiler2). I have do some modification to this code by adding if condition and for loop parser. I also add some extra output to make the program flow easier to understand.
+In this practice I used program refer to [ccc109-compiler2](https://gitlab.com/ccc109/sp/-/tree/master/03-compiler/03b-compiler2). I have do some modification to this code by adding if condition and for loop parser. I also add some extra output to make the program flow easier to understand. To use this program we need to open the directory in terminal and then run the folowing command :
+
+1). Write the command below to compile the program 
+```
+$ make
+```
+2). To parse the code, run the compiler.exe
+```
+$ ./compiler.exe filename
+```
+
 ### 1. If condition
 <details><summary>Click me to SHOW the full parser code</summary>
 
@@ -42,6 +52,7 @@ void IF() {
 <br>
 
 For example if we have a C code :
+
 ```
 if (a == 3) {
     b = 4;
@@ -62,10 +73,12 @@ To parse this if condition code, we need to add IF statement in compiler.c and a
 the code above define ifBegin, ifMid and ifEnd. I use this three integer to show the program flow in parsing. In this code, emit have the same function as printf so it will show the string in its parenthesis as the output.
 <img src="if2.PNG" alt="if code 2" title="if code 2" width="550" />
 in parsing the code, because we don't need to care some token such as if, {, }, (, ), so we can just skip it. The E function would then process the if condition value in parenthesis. After that it would continue to check for the next statement by calling STMT function. It would then read program inside curl bracket. For example, in our first if condition code we got that b = 4. After parsing it, we will got something like this:
+
 ```
 t0 = 4
 b = t0
 ```
+
 The parser would then keep repeating the above function for all statements (if, else if, else) and read until the end of the code. By using this program to compile our C code example, we would got this output:
 
 ```
