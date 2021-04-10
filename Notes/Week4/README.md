@@ -3,7 +3,7 @@
 In compiler, the parser will obtain a string of tokens from lexical analyzer. It then will verifies whether the string can be the grammar for the source language or not.
 
 ## Practice writing a simple parser
-In this practice I used program refer to [ccc109-compiler2](https://gitlab.com/ccc109/sp/-/tree/master/03-compiler/03b-compiler2). I have do some modification to this code by adding if condition and for loop parser. I also add some extra output to make the program flow easier to understand. To use this program we need to open the directory in terminal and then run the folowing command :
+In this practice I used program refer to [ccc109-compiler2](https://gitlab.com/ccc109/sp/-/tree/master/03-compiler/03b-compiler2). I have do some modification to this code by adding if condition and for loop parser. I also add some extra output to make the program flow easier to understand ( Open [compiler.c](https://github.com/NubletZ/sp109b/blob/nubletz/Notes/Week4/compiler.c) to see the full parser code ). To use this program we need to open the directory in terminal and then run the folowing command :
 
 1). Write the command below to compile the program 
 ```
