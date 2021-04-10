@@ -64,6 +64,8 @@ else {
     b = a;
 }
 ```
+> code from [elseif.c](https://github.com/NubletZ/sp109b/blob/nubletz/Notes/Week4/elseif.c) 
+
 To parse this if condition code, we need to add IF statement in compiler.c and add the statement in STMT function.
 <img src="ifstmt.PNG" alt="if statement" title="if statement" width="450" />
 
@@ -155,6 +157,8 @@ for (i = 3; i < 5; i++) {
     }
 }
 ```
+> code from [for.c](https://github.com/NubletZ/sp109b/blob/nubletz/Notes/Week4/for.c)
+
 To parse this code we need to add FOR function in compiler.c and also add for statement in STMT function
 <img src="forstmt.PNG" alt="adding for into STMT" title="adding for into STMT" width="450" />
 
