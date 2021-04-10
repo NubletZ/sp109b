@@ -44,5 +44,5 @@ Now if you check in your directory you will find an executable file hello2. In L
 <br>
 
 The image below show the whole interaction of compiling hello2.c in Linux. File that I marked is the output result.
-<img src="compileHello2.PNG" alt="compileHello2" title="compileHello2" width="450" />
+<img src="compileHello2.PNG" alt="compileHello2" title="compileHello2" width="550" />
 
