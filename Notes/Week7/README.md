@@ -104,7 +104,7 @@ Otherwise if the defined value is `__WINDOWS__` then this program will :
 Here is the result after compile and run the excutable file in Windows :
 <img src="winFileC.PNG" alt="for code 1" title="for code 1" width="550" />
 
-<br><br>
+<br>
 
 Result from compile the program and run its excutable file in Linux :
 <img src="linFileC.PNG" alt="for code 1" title="for code 1" width="900" />
