@@ -67,14 +67,22 @@ else {
 > code from [elseif.c](https://github.com/NubletZ/sp109b/blob/nubletz/Notes/Week4/elseif.c) 
 
 To parse this if condition code, we need to add IF statement in compiler.c and add the statement in STMT function.
-<img src="ifstmt.PNG" alt="if statement" title="if statement" width="450" />
+<img src="resource/ifstmt.PNG" alt="if statement" title="if statement" width="450" />
 
 >adding if statment into STMT function.
 
-<img src="if1.PNG" alt="if code 1" title="if code 1" width="550" />
+<img src="resource/if1.PNG" alt="if code 1" title="if code 1" width="550" />
 the code above define ifBegin, ifMid and ifEnd. I use this three integer to show the program flow in parsing. In this code, emit have the same function as printf so it will show the string in its parenthesis as the output.
-<img src="if2.PNG" alt="if code 2" title="if code 2" width="550" />
-in parsing the code, because we don't need to care some token such as if, {, }, (, ), so we can just skip it. The E function would then process the if condition value in parenthesis. After that it would continue to check for the next statement by calling STMT function. It would then read program inside curl bracket. For example, in our first if condition code we got that b = 4. After parsing it, we will got something like this:
+<img src="resource/if2.PNG" alt="if code 2" title="if code 2" width="550" />
+in parsing the code, because we don't need to care some token such as "if", "{", "}", "(", ")", so we can just skip it. The E function would then process the if condition value in parenthesis. After that it would continue to check for the next statement by calling STMT function. It would then read program inside curl bracket. For example, remember that in our first if condition code we got that b = 4. 
+
+```
+if (a == 3) {
+    b = 4;
+}
+```
+
+After parsing it, we will got output like this:
 
 ```
 t0 = 4
@@ -116,7 +124,7 @@ t8 = a
 b = t8
 [end] (L2)
 ```
-<img src="ParseTree.png" alt="if else parse tree" title="if else parse tree" width="900" />
+<img src="resource/ParseTree.png" alt="if else parse tree" title="if else parse tree" width="900" />
 
 > Parse tree from the code
 
@@ -159,21 +167,28 @@ for (i = 3; i < 5; i++) {
 ```
 > code from [for.c](https://github.com/NubletZ/sp109b/blob/nubletz/Notes/Week4/for.c)
 
+<br>
+
 To parse this code we need to add FOR function in compiler.c and also add for statement in STMT function
-<img src="forstmt.PNG" alt="adding for into STMT" title="adding for into STMT" width="450" />
+<img src="resource/forstmt.PNG" alt="adding for into STMT" title="adding for into STMT" width="450" />
 
 > adding for into statment
 
-<img src="for1.PNG" alt="for code 1" title="for code 1" width="550" />
-In this code forBegin has a function as the loop point at the begining of for function after it define its initialization statement, while forEnd is the point at the end of for code.
+<br>
 
-<img src="for2.PNG" alt="for code 1" title="for code 1" width="550" />
-Just like in if parser, unused token such as for, (, ), {, }, ;, would be skiped. There are four main function that will read different part of for function :
+<img src="resource/for1.PNG" alt="for code 1" title="for code 1" width="550" />
+In code shown above forBegin has a function as the loop point at the begining of for function after it define its initialization statement, while forEnd is the point at the end of for code.
 
-> * ASSIGN() = this function will read the initialization statement
-> * E() = this function will read the test expression (e.x i < 9, i == 2, i > 0).
-> * F() = this will read the update statement in for (e.x i++, i--).
-> * STMT() = this will read the content from for (the code that written in curl bracket).
+<br><br>
+
+
+<img src="resource/for2.PNG" alt="for code 1" title="for code 1" width="550" />
+Just like in if parser, unused token such as "for", "(", ")", "{", "}", ";", would be skiped. There are four main function that will read different part of for function :
+
+* `ASSIGN()` = this function will read the initialization statement
+* `E(`) = this function will read the test expression (e.x i < 9, i == 2, i > 0).
+* `F()` = this will read the update statement in for (e.x i++, i--).
+* `STMT()` = this will read the content from for (the code that written in curl bracket).
 
 we then would get an output as what written below :
 ```

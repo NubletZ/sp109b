@@ -1,7 +1,7 @@
 # Week 1 Notes
 ## GCC
 GCC is a collection of programming compilers including various languages such as ada, C, C++, fortran, ObjC, Fortran, and Java.
-This GCC is a key component of "GNU Toolchain" that includes GNU Make, an automation tool for compiling and building applications. In this System Program course, GNU Make will often be use to help in compiling program.
+This GCC is a key component of "GNU Toolchain" that includes GNU Make, an automation tool for compiling and building applications. In this System Program course, GNU Make will often be used to help in compiling program.
 ## GNU Make
 By default, Make will reads a description of a project from a makefile that is in the same current directory. A makefile is a file that specifies a set of compilation rules in term of targets (such as executables) and their dependencies (such as object files and source files).
 
@@ -14,7 +14,7 @@ Normally, to compile this collection of code we can type the following command :
 ```
 $ gcc -o sum main.c sum.c -I.
 ```
-This will compiles the two .c files and names the executeable program as sum. The -I here have a function to make gcc focus in the curren directory while (.) is typed to include the sum.h file.
+This will compiles both of "*.c" files and names the executeable program as sum. The -I here have a function to make gcc focus in the current directory while (.) is typed to include the sum.h file.
 
 The next example will compile program by using makefile to manage the above collection of code
 ```
