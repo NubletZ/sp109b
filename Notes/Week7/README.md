@@ -3,6 +3,7 @@
 POSIX (Portable Operating System) standard is a  document that released by the IEEE, to clarigy and make uniform the application programming interfaces provided by Unix-y OS. When you write a program based on POSIX standards, you can port them easily in Unix, Linux, and other derivative OS.
 
 ## Write C With POSIX
+For the code example, the following code will print out and write "hello world!" into hello.txt file.
 ```
 // file.c
 #include <stdio.h>
@@ -31,7 +32,9 @@ The code above is written using POSIX. The function such as open(), close(), fsc
 To make a program can run in both Linux and Windows, then you can try to use `ifdef`, `ifndef`, `endif`. This several commands will come in handy to convert some of your program function and the library that you used in a specific condition. I take an example from the code above and modify it a little bit, so that we can run it in Windows.
 
 ```
-//file.c
+//fileWinLinux.c
+//reference : https://gitlab.com/ccc109/sp
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -96,3 +99,14 @@ Otherwise if the defined value is `__WINDOWS__` then this program will :
 * set Status into 1
 * change open function into _open, and close function into _close. The functions that start with underline are functions from Microsoft POSIX-style low-level I/O calls. This POSIX-style is excutable in Windows.
 * change fsync function into sqrt. If we run the program in `__WINDOWS__` we will find an error when compiling the program since it can't recognize the fsync function. Since fd is int, so I change fsync into sqrt which need a float for it's argument. This way it won't meet the same error.
+
+<br>
+Here is the result after compile and run the excutable file in Windows :
+<img src="winFileC.PNG" alt="for code 1" title="for code 1" width="550" />
+
+<br><br>
+
+Result from compile the program and run its excutable file in Linux :
+<img src="linFileC.PNG" alt="for code 1" title="for code 1" width="900" />
+
+The attribute `-D` after the `gcc` command is used to define
