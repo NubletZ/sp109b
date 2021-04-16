@@ -191,7 +191,7 @@ Just like in if parser, unused token such as "for", "(", ")", "{", "}", ";", wou
 * `STMT()` = this will read the content from for (the code that written in curl bracket).
 
 As you know that in for function people often to use `++` as increment and `--` as decrement, so we need to add the function to recognize this token in our compiler as shown in the picture below.
-<img src="resource/jiajian.PNG" alt="F() for ++/--" title="F() for ++/--" width="550" />
+<img src="resource/jianjia.PNG" alt="F() for ++/--" title="F() for ++/--" width="550" />
 
 we then would get an output as what written below :
 ```
