@@ -160,7 +160,7 @@ Let's write a simple for loop program to test this parser code :
 ```
 for (i = 3; i < 5; i++) {
     c = c + 3;
-    for (j = 2; j < 6; j--) {
+    for (j = 10; j > 6; j--) {
         a = b + 2;
     }
 }
@@ -194,7 +194,7 @@ we then would get an output as what written below :
 ```
 for (i = 3; i < 5; i++) {    
     c = c + 3;
-    for (j = 2; j < 6; j--) {
+    for (j = 10; j > 6; j--) {
         a = b + 2;
     }
 }
@@ -212,12 +212,12 @@ t5 = c
 t6 = 3
 t7 = t5 + t6
 c = t7
-t8 = 2
+t8 = 10
 j = t8
 (L2)
 t9 = j
 t10 = 6
-t11 = t9 < t10
+t11 = t9 > t10
 if not t11, goto L3
 j = j - 1
 t14 = 2
