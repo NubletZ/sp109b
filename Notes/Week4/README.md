@@ -161,7 +161,7 @@ Let's write a simple for loop program to test this parser code :
 for (i = 3; i < 5; i++) {
     c = c + 3;
     for (j = 10; j > 6; j--) {
-        a = b + 2;
+        a = a + 2;
     }
 }
 ```
@@ -190,12 +190,15 @@ Just like in if parser, unused token such as "for", "(", ")", "{", "}", ";", wou
 * `F()` = this will read the update statement in for (e.x i++, i--).
 * `STMT()` = this will read the content from for (the code that written in curl bracket).
 
+As you know that in for function people often to use `++` as increment and `--` as decrement, so we need to add the function to recognize this token in our compiler as shown in the picture below.
+<img src="resource/jiajian.PNG" alt="F() for ++/--" title="F() for ++/--" width="550" />
+
 we then would get an output as what written below :
 ```
 for (i = 3; i < 5; i++) {    
     c = c + 3;
     for (j = 10; j > 6; j--) {
-        a = b + 2;
+        a = a + 2;
     }
 }
 
@@ -220,6 +223,7 @@ t10 = 6
 t11 = t9 > t10
 if not t11, goto L3
 j = j - 1
+t13 = a
 t14 = 2
 t15 = t13 + t14
 a = t15
