@@ -1,6 +1,6 @@
 # Week 7 Notes
 ## What is POSIX?
-POSIX (Portable Operating System) standard is a  document that released by the IEEE, to clarigy and make uniform the application programming interfaces provided by Unix-y OS. When you write a program based on POSIX standards, you can port them easily in Unix, Linux, and other derivative OS.
+POSIX (Portable Operating System) standard is a  document that released by the IEEE, to clarify and make uniform the application programming interfaces (API) provided by Unix-y OS. When you write a program based on POSIX standards, you can port them easily in Unix, Linux, and other derivative OS.
 
 ## Write C With POSIX
 For the code example, the following code will print out and write "hello world!" into hello.txt file.
