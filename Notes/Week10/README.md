@@ -11,6 +11,7 @@ Semaphore is a signaling mechanism. It uses two atomic operation, wait and signa
 
 <img src="semaphore.png" alt="Semaphore" title="Semaphore" width="400"><br>
 
+> C = chopstick, P = philosopher
 
 The dining philosophers problem is a well known example to illustrate the synchronization problem in computer science. Take a look on the picture above. For example there are 5 philosophers that want to eat, each of them need 2 chopsticks to start to eat. The problem is there are only 5 chopsticks on the table. If each philosopher ( philosopher[i] ) take the chopstick on their right side ( chopstick[i] ) then it would be a deadlock since the left chopstick ( chopstick[(i+1)%5] ) was taken by the other philosopher ( philosopher[(i+1)%5] ). So to solve this problem we can use semaphore method.
 
@@ -75,18 +76,21 @@ If you still unfamiliar with the code above please open the reference website to
 
 <img src="semaphore progress.png" alt="Semaphore program" title="Semaphore program" width="900"><br>
 
-1). In this program, at first we would only let 4 philosopher to enter the room so that we can avoid deadlock.
+1). At first we would only let 4 philosopher to enter the room so that we can avoid deadlock.
 ```
 sem_init(&room,0,4);
 ```
-2). Each philosopher who enter the room will sit on one seat apart from the semaphore that has entered the room before him, this way both left and right chopstick is available to be use by philosopher as long as no one has enter the room before him and sit next to him.
+
+2). Each philosopher who enter the room will sit on one seat apart from the semaphore that has entered the room before him, this way both left and right chopstick is available to be use by philosopher as long as no one has enter the room before him and sitting the seat next to him.
 ```
 for(i=0;i<5;i++){
 		a[i]=2*i%5; //Set the philosopher that entering room to have 1 seat distance
 		pthread_create(&tid[i],NULL,philosopher,(void *)&a[i]);
 	}
 ```
-3). After philosopher has finished eating, it will put down the chopstick so it's available to be use by the other philosopher who have wait to use the chopstick.
+In this case P3 enter the room first and start to eat using C3 and C4, P1 also enter the room and start to eat using C1 and C2, then P4 and P1 enter the room, but because there is only one chopstick that is available so they keep wait until other chopstick is available. 
+
+3). After philosopher has finished eating, it will put down the chopstick and leave the room, so the chopstick become available to be use by the other philosopher and another philosopher can enter the room.
 
 Output (output sequence might be different depend on your device) :
 ```
