@@ -3,8 +3,8 @@
 Both mutex and semaphore are kernel resources that provide synchronization services. But they are two different things.
 
 ### Mutex (Mutual Exclusion)
-Mutex is like a key, it works with locking mechanism that makes sure only one thread can work with the entire buffer.
-
+Mutex is like a key, it works with locking mechanism that makes sure only one thread can work with the entire buffer. To 
+know better about how mutex work, you can refer to [How to Use C Mutex Lock Examples for Linux Thread Synchronization](https://www.thegeekstuff.com/2012/05/c-mutex-examples/).
 
 ### Semaphore
 Semaphore is a signaling mechanism. It uses two atomic operation, wait and signal for the process sychronization. Semaphor can separate a single 4 KB buffer into four 1 KB buffers and let users and producers to work on different buffer at the same time.
