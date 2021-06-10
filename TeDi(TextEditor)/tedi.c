@@ -14,7 +14,8 @@
 
 /*** defines ***/
 
-#define CTRL_KEY(k) ((k) & 0x1f)
+#define CTRL_KEY(k) (27)
+#define ESC 27
 #define ABUF_INIT {NULL, 0}
 #define TEDI_VERSION "0.1"
 
@@ -49,6 +50,9 @@ struct editorConfig {
   int screencols;
   int numrows;
   erow *row; //define new name for struct erow
+  int escstat; //flag if user press esc
+  char message[80]; //define message at the bottom
+  char filename[10];
   struct termios orig_termios;
 };
 
@@ -299,7 +303,13 @@ void editorDrawRows(struct abuf *ab) {
       abAppend(ab, "\r\n", 2);
     }
   }
-  abAppend(ab, ":cmd", 4);
+  if(y == E.screenrows - 1)
+  {
+    int messagelen = strlen(E.message);
+    int blank = (E.screencols - messagelen - 1);
+    abAppend(ab, E.message, messagelen);
+    while (blank--) abAppend(ab, "=", 1);
+  }
 }
 
 void editorRefreshScreen() {
@@ -349,10 +359,9 @@ void editorProcessKeypress() {
   int c = editorReadKey();
 
   switch (c) {
-    case CTRL_KEY('q'):
-      write(STDOUT_FILENO, "\x1b[2J", 4);
-      write(STDOUT_FILENO, "\x1b[H", 3);
-      exit(0);
+    case ESC:
+      sprintf(E.message, "> Do you realy want to exit TeDi? (y/n)");
+      E.escstat = 1;
       break;
 
     case ARROW_UP:
@@ -378,17 +387,33 @@ void editorProcessKeypress() {
       }
       break;
   }
+  if(E.escstat) {
+    switch (c) {
+      case 'y':
+        write(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[H", 3);
+        exit(0);
+        break;
+      case 'n':
+        sprintf(E.message, "-- EDIT TEXT | %s --", E.filename);
+        E.escstat = 0;
+        break;
+    }
+  }
 }
 
 /*** init ***/
 
-void initEditor() {
+void initEditor(char filename[50]) {
+  sprintf(E.filename, "%s", filename);
   E.cx = 0; //horizontal coordinate of cursor
   E.cy = 0; //vertical coordinate of cursor
   E.rowoff = 0;
   E.coloff = 0; 
   E.numrows = 0;
   E.row = NULL;
+  E.escstat = 0;
+  sprintf(E.message, "-- EDIT TEXT | %s --", filename);
 
 //initialize screenrows and screencols in E struct
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
@@ -396,7 +421,7 @@ void initEditor() {
 
 int main(int argc, char *argv[]) {
   enableRawMode();
-  initEditor();
+  initEditor(argv[1]);
   if (argc >= 2) {
     editorOpen(argv[1]);
   }
