@@ -252,8 +252,8 @@ void editorScroll() {
   if (E.cy < E.rowoff) {
     E.rowoff = E.cy;
   }
-  if (E.cy >= E.rowoff + E.screenrows) {
-    E.rowoff = E.cy - E.screenrows + 1;
+  if (E.cy >= E.rowoff + E.screenrows - 1) {
+    E.rowoff = E.cy - E.screenrows + 2;
   }
 }
 
@@ -293,15 +293,13 @@ void editorDrawRows(struct abuf *ab) {
 3. \x1b[ : escape sequances to instruct terminal to do various text formatting tasks including clearing screen
 4. K : erase part of the current line
 */
-    if (y == E.screenrows - 1) {
-      abAppend(ab, "hello", 5);
-    }
 
     if (y < E.screenrows - 1) {
       //only write "\r\n" until before end of line
       abAppend(ab, "\r\n", 2);
     }
   }
+  abAppend(ab, ":cmd", 4);
 }
 
 void editorRefreshScreen() {
@@ -319,7 +317,7 @@ H command is used to position the cursor, in the line above we set cursor positi
   editorDrawRows(&ab); //pass ab value so it can be use in editorDrawRows()
 
   char buf[32];
-  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy -E.rowoff) + 1, E.cx + 1);
+  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy -E.rowoff + 1), E.cx + 1);
   abAppend(&ab, buf, strlen(buf));
 
   abAppend(&ab, "\x1b[?25h", 6);
@@ -342,7 +340,7 @@ void editorMoveCursor(int key) {
       if (E.cy != 0) E.cy--;
       break;
     case ARROW_DOWN:
-      if (E.cy < E.numrows) E.cy++;
+      if (E.cy < E.numrows - 1) E.cy++;
       break;
   }
 }
