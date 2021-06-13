@@ -13,6 +13,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdarg.h>
+#include <fcntl.h>
 
 /*** defines ***/
 
@@ -27,6 +28,7 @@ enum moveKey {
 1. Add large int value to avoid conflict with ordinary keypresses.
 2. By setting first constant in enum to 1000, the rest of constants value will be the incementing values.
 */
+  BACKSPACE = 127,
   ARROW_LEFT = 1000,
   ARROW_RIGHT,
   ARROW_UP,
@@ -56,6 +58,7 @@ struct editorConfig {
   int screencols;
   int numrows;
   erow *row; //define new name for struct erow
+  int dirty; //detect whether the text loaded in editor is differs from origin file
   int escstat; //flag if user press esc
   int esc27; //flag to devide between esc key press and esc return
   char message[80]; //define message at the bottom
@@ -221,13 +224,17 @@ unlike H command C and B won't let cursor to past the edge of screen
 
 /*** message below ***/
 
-void setMessage(int type, char *string) {
+void setMessage(int type, const char *string, ...) {
+  va_list ap;
+  va_start(ap, string);
   if (type == 1) {
-    snprintf(E.message, sizeof(E.message), "-- EDIT TEXT | %.20s --", string);
+    snprintf(E.message, sizeof(E.message), "-- EDIT TEXT | %.20s | %d current line %s --", E.filename ? E.filename : "untitled", E.cy + 1, E.dirty ? " (modified)" : "");
   }
-  if (type == 27) {
+  else if (type == 27) {
     sprintf(E.message, "> Do you realy want to exit TeDi? (y/n)");
   }
+  else vsnprintf(E.message, sizeof(E.message), string, ap);
+  va_end(ap);
   E.message_time = time(NULL);
 }
 
@@ -235,7 +242,7 @@ void messageSaveTime() {
   if (E.escstat != 1) {
     int msglen = strlen(E.message);
     if (msglen && time(NULL) - E.message_time < 5) {
-      setMessage(1, E.filename);
+      setMessage(1, NULL);
     }
   }
 }
@@ -296,15 +303,57 @@ void editorAppendRow(char *s, size_t len) {
   editorUpdateRow(&E.row[at]);
 
   E.numrows++;
+  E.dirty++;
+}
+
+void editorRowInsertChar(erow *row, int at, int c) {
+  if (at < 0 || at > row->size) at = row->size;
+  row->chars = realloc(row->chars, row->size + 2);
+  memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+  row->size++;
+  row->chars[at] = c;
+  editorUpdateRow(row);
+  E.dirty++;
+}
+
+/*** editor operations ***/
+
+void editorInsertChar(int c) {
+  if (E.cy == E.numrows) {
+    editorAppendRow("", 0);
+  }
+  editorRowInsertChar(&E.row[E.cy], E.cx, c);
+  E.cx++;
 }
 
 /*** file i/o ***/
+
+char *editorRowsToString(int *buflen) {
+//this function will convert array of erow structs into a single string, and write the change into file
+  int totlen = 0;
+  int j;
+  for (j = 0; j < E.numrows; j++) {
+    totlen += E.row[j].size + 1;
+  }
+  *buflen = totlen;
+
+  char *buf = malloc(totlen);
+  char *p = buf;
+  for (j = 0; j < E.numrows; j++) {
+    memcpy(p, E.row[j].chars, E.row[j].size);
+    p += E.row[j].size;
+    *p = '\n';
+    p++;
+  }
+
+  return buf;
+}
 
 void editorOpen(char *filename) {
 //used for opening and reading a file from disk
   free(E.filename);
   E.filename = strdup(filename);
-  setMessage(1, E.filename);
+  setMessage(1, NULL);
 
   FILE *fp = fopen(filename, "r");
   if (!fp) die("fopen");
@@ -319,6 +368,33 @@ void editorOpen(char *filename) {
   }
   free(line);
   fclose(fp);
+  E.dirty = 0;
+}
+
+void editorSave() {
+  if(E.filename == NULL) return;
+
+  int len;
+  char *buf = editorRowsToString(&len);
+
+  int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+  if (fd != -1) {
+    if (ftruncate(fd, len) != 1) {
+      if (write(fd, buf, len) == len) {
+        close(fd);
+        free(buf);
+        E.dirty = 0;
+        char msg[80];
+        snprintf(msg, sizeof(msg), "-- %d bytes written to disk --", len);
+        setMessage(0, msg);
+        return;
+      }
+    }
+    close(fd);
+  }
+
+  free(buf);
+  setMessage(0, "Can't save the file! I/O error: %s", strerror(errno));
 }
 
 /*** append buffer ***/
@@ -442,29 +518,40 @@ H command is used to position the cursor, in the line above we set cursor positi
 
 void editorMoveCursor(int key) {
   erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
+  int temp = E.numrows - 1;
 
   switch (key) {
     case ARROW_LEFT:
       if (E.cx != 0) E.cx--;
       else if (E.cy > 0) {//go to end of previouse line when E.cx == 0 and key press <
+        setMessage(1, NULL);
         E.cy--;
         E.cx = E.row[E.cy].size;
       }
       break;
+      
     case ARROW_RIGHT:
       if (row && E.cx < row->size) {
         E.cx++;
       }
-      else if (E.cx == row->size) {
+      else if (row && E.cx == row->size && E.cy < temp) {
+        //sprintf(E.message, "%d : %d", E.cy, temp);
+        setMessage(1, NULL);
         E.cy++;
         E.cx = 0;
       }
       break;
     case ARROW_UP:
-      if (E.cy != 0) E.cy--;
+      if (E.cy != 0)  {
+        E.cy--;
+        setMessage(1, NULL);
+      }
       break;
     case ARROW_DOWN:
-      if (E.cy < E.numrows - 1) E.cy++;
+      if (E.cy < E.numrows - 1) {
+        E.cy++;
+        setMessage(1, NULL);
+      }
       break;
   }
 
@@ -477,6 +564,7 @@ void editorMoveCursor(int key) {
 
 void editorProcessKeypress() {
   int c = editorReadKey();
+  //int temp = E.numrows - 1;
 
   if (E.esc27 == 1) {
     switch (c) {
@@ -487,41 +575,7 @@ void editorProcessKeypress() {
         break;
     }
   }
-  switch (c) {
-    case ARROW_UP:
-    case ARROW_DOWN:
-    case ARROW_LEFT:
-    case ARROW_RIGHT:
-      editorMoveCursor(c);
-      break;
-
-    case HOME_KEY:
-      E.cx = 0;
-      break;
-    case END_KEY:
-      if (E.cy < E.numrows) {
-        E.cx = E.row[E.cy].size;
-      }
-      break;
-
-    case PAGE_UP:
-    case PAGE_DOWN: //next and prev page
-      {
-        if ( c == PAGE_UP) {
-          E.cy = E.rowoff;
-        }
-        else if (c == PAGE_DOWN) {
-          E.cy = E.rowoff + E.screenrows - 2;
-          if (E.cy > E.numrows) E.cy = E.numrows;
-        }
-
-        int times = E.screenrows - 2;
-        while (times--)
-          editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
-      }
-      break;
-  }
-  if(E.escstat) {
+  if (E.escstat) {
     switch (c) {
       case 'y':
         write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -529,8 +583,67 @@ void editorProcessKeypress() {
         exit(0);
         break;
       case 'n':
-        setMessage(1, E.filename);
+        setMessage(1, NULL);
         E.escstat = 0;
+        break;
+    }
+  }
+  else if (!E.escstat) {
+    switch (c) {
+      case '\r':
+        /* TODO */
+        break;
+
+      case CTRL_KEY('s'):
+        editorSave();
+        break;
+
+      case ARROW_UP:
+      case ARROW_DOWN:
+      case ARROW_LEFT:
+      case ARROW_RIGHT:
+        editorMoveCursor(c);
+        break;
+
+      case HOME_KEY:
+        E.cx = 0;
+        break;
+      case END_KEY:
+        if (E.cy < E.numrows) {
+          E.cx = E.row[E.cy].size;
+        }
+        break;
+
+      case BACKSPACE:
+      case CTRL_KEY('h'):
+      case DEL_KEY:
+        /* TODO */
+        break;
+
+      case PAGE_UP:
+      case PAGE_DOWN: //next and prev page
+        {
+          if ( c == PAGE_UP) {
+            E.cy = E.rowoff;
+          }
+          else if (c == PAGE_DOWN) {
+            E.cy = E.rowoff + E.screenrows - 2;
+            if (E.cy > E.numrows) E.cy = E.numrows;
+          }
+
+          int times = E.screenrows - 2;
+          while (times--)
+            editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+        }
+        break;
+
+      case CTRL_KEY('l'):
+      case '\x1b':
+        break;
+
+      default: //allow keyprass that isn't mapped to be inserted into text
+        editorInsertChar(c);
+        //sprintf(E.message, "%d : %d", E.cy, temp);
         break;
     }
   }
@@ -548,6 +661,7 @@ void initEditor() {
   E.coloff = 0; 
   E.numrows = 0;
   E.row = NULL;
+  E.dirty = 0;
   E.escstat = 0;
   E.esc27 = 0;
 
@@ -561,7 +675,7 @@ int main(int argc, char *argv[]) {
   if (argc >= 2) {
     editorOpen(argv[1]);
   }
-  else sprintf(E.message, "-- EDIT TEXT | untitled --");
+  else setMessage(1, NULL);
 
   while (1) {
     editorRefreshScreen();
