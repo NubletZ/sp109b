@@ -18,7 +18,7 @@
 /*** defines ***/
 
 #define CTRL_KEY(k) ((k) & 0x1f)
-#define ESC 27
+#define ESC '\x1b'
 #define ABUF_INIT {NULL, 0}
 #define TEDI_VERSION "0.1"
 #define TEDI_TAB_STOP 8
@@ -60,6 +60,7 @@ struct editorConfig {
   erow *row; //define new name for struct erow
   int dirty; //detect whether the text loaded in editor is differs from origin file
   int escstat; //flag if user press esc
+  int saveAsstat;
   int esc27; //flag to devide between esc key press and esc return
   char message[80]; //define message at the bottom
   time_t message_time;
@@ -68,6 +69,11 @@ struct editorConfig {
 };
 
 struct editorConfig E;
+
+/** prototypes ***/
+
+void editorRefreshScreen();
+char *editorPrompt(char *prompt);
 
 /*** terminal ***/
 
@@ -439,7 +445,14 @@ void editorOpen(char *filename) {
 }
 
 void editorSave() {
-  if(E.filename == NULL) return;
+  if(E.filename == NULL) {
+    E.esc27 = 0;
+    E.filename = editorPrompt("Save as: %s (ESC to cancel)");
+    if (E.filename == NULL) {
+      setMessage(0, "Save aborted");
+      return;
+    }
+  }
 
   int len;
   char *buf = editorRowsToString(&len);
@@ -582,6 +595,46 @@ H command is used to position the cursor, in the line above we set cursor positi
 }
 
 /*** input ***/
+
+char *editorPrompt(char *prompt) {
+  size_t bufsize = 128;
+  char *buf = malloc(bufsize);
+
+  size_t buflen = 0;
+  buf[0] = '\0';
+
+  while (1) {
+    setMessage(0, prompt, buf);
+    editorRefreshScreen();
+
+    int c = editorReadKey();
+    if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
+      if (buflen != 0) buf[--buflen] = '\0';
+    }
+    else if (c == '\x1b') {
+      setMessage(1, NULL);
+      free(buf);
+      E.esc27 = 1;
+      return NULL;
+    }
+    else if (c == '\r') {
+      if (buflen != 0) {
+        setMessage(1, NULL);
+        E.esc27 = 1;
+        return buf;
+      }
+    }
+    else if (!iscntrl(c) && c < 128) {
+      if (buflen == bufsize - 1) {
+        bufsize *= 2;
+        buf = realloc(buf, bufsize);
+      }
+      buf[buflen++] = c;
+      buf[buflen] = '\0';
+    }
+    setMessage(1, NULL);
+  }
+}
 
 void editorMoveCursor(int key) {
   erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
