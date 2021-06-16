@@ -68,9 +68,12 @@ void eat(int phil, int c2)
 {
 	printf("\nPhilosopher %d is eating spagetti using chopsticks %d and %d", phil, phil, c2);
 }
+
 /* BY - ANUSHKA DESHPANDE */
+// This code has been modified
 ```
 > code reference : [The Dining Philosophers Problem Solution in C](https://medium.com/swlh/the-dining-philosophers-problem-solution-in-c-90e2593f64e8)
+> code that has been modified : [Nubletz/philospher2.c](https://github.com/NubletZ/sp109b/my%20C%20code/philospher2.c)
 
 If you still unfamiliar with the code above please open the reference website to see the detail explanation. I have done some modification to the original code so it's able to let multiple philosopher eating spagetti at the same time. To understand the program flow, take a look at the illustration below.
 

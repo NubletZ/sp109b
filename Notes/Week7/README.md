@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 The code above is written using POSIX. The function such as open(), close(), fscync() are part from `unistd.h` library which belongs to POSIX. This way you only can compile this program in Unix, Linux, and other derivative OS, you won't be able to compile this in Windows neither in MacOS.
 
 ## Write C Program for Linux and Windows
-To make a program can run in both Linux and Windows, then you can try to use `ifdef`, `ifndef`, `endif`. This several commands will come in handy to convert some of your program function and the library that you used in a specific condition. I take an example from the code above and modify it a little bit, so that we can run it in Windows.
+To make a program can run in both Linux and Windows, then you can try to use `ifdef`, `ifndef`, `endif`. This several commands will come in handy to convert some of your program function and the library that you used in a specific condition. I take an example from [ccc109/sp](https://gitlab.com/ccc109/sp/-/blob/master/08-posix/01-basic/fileWinLinux.c) and modify it a little bit, so that we can run it in Windows.
 
 ```
 //fileWinLinux.c
@@ -74,6 +74,8 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 ```
+> to see the code refer to this link [Nubletz/fileWinLinux.c](https://github.com/NubletZ/sp109b/my%20C%20code/fileWinLinux.c)
+
 As you can see from the code above, I separate between `__POSIX__` and `__WINDOWS__`.
 
 ```
