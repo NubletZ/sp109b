@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
 ```
 The code above is written using POSIX. The function such as open(), close(), fscync() are part from `unistd.h` library which belongs to POSIX. This way you only can compile this program in Unix, Linux, and other derivative OS, you won't be able to compile this in Windows neither in MacOS.
 
-## Write C Program for Linux and Windows
-To make a program can run in both Linux and Windows, then you can try to use `ifdef`, `ifndef`, `endif`. This several commands will come in handy to convert some of your program function and the library that you used in a specific condition. I take an example from [ccc109/sp](https://gitlab.com/ccc109/sp/-/blob/master/08-posix/01-basic/fileWinLinux.c) and modify it a little bit, so that we can run it in Windows.
+## Try to Write a C Program for Linux and Windows
+To make a program can run in both Linux and Windows, then you can try to use `ifdef`, `ifndef`, `endif`. This several commands will come in handy to convert some of your program function and the library that you used in a specific condition. I take an example from [ccc109/sp](https://gitlab.com/ccc109/sp/-/blob/master/08-posix/01-basic/fileWinLinux.c) and modify it a little bit, so that we can run this program in Windows.
 
 ```
 //fileWinLinux.c
@@ -44,6 +44,7 @@ To make a program can run in both Linux and Windows, then you can try to use `if
 
 // #define __POSIX__
 #ifdef __POSIX__
+#define datafd fd
 #define Status 0
 #include <unistd.h>
 #endif
@@ -52,7 +53,8 @@ To make a program can run in both Linux and Windows, then you can try to use `if
 #include <io.h>
 #include <math.h>
 #define Status 1
-#define fsync sqrt //change fsync into sqrt to avoid failed to compile
+#define datafd _fd //switch variable that passed since fsync(int) while fflush(FILE)
+#define fsync fflush //change fsync into fflush which has a similar function
 #define open _open //using Microsoft POSIX-style low-level IO calls
 #define close _close //using Microsoft POSIX-style low-level IO calls
                      //ref:https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/open-wopen?view=msvc-160
@@ -68,8 +70,7 @@ int main(int argc, char *argv[]) {
     sprintf(buffer, "hello world!\n");
     int rc = write(fd, buffer, strlen(buffer));
     assert(rc == (strlen(buffer)));
-    if(Status == 0) fsync(fd);
-    else fflush(_fd);
+    fsync(datafd);
     close(fd);
     return 0;
 }
@@ -91,16 +92,17 @@ If the defined value is `__POSIX__` then compiler will set Status into 0 and use
 #include <io.h>
 #include <math.h>
 #define Status 1
-#define fsync sqrt
-#define open _open
-#define close _close
+#define datafd _fd 
+#define fsync fflush 
+#define open _open 
+#define close _close 
 #endif
 ```
 Otherwise if the defined value is `__WINDOWS__` then this program will :
 * use `io.h` and `math.h` library
 * set Status into 1
 * change open function into _open, and close function into _close. The functions that start with underline are functions from Microsoft POSIX-style low-level I/O calls. This POSIX-style is excutable in Windows.
-* change fsync function into sqrt. If we run the program in `__WINDOWS__` we will find an error when compiling the program since it can't recognize the fsync function. Since fd is int, so I change fsync into sqrt which need a float for it's argument. This way it won't meet the same error.
+* change fsync function into fflush. If we run the program in `__WINDOWS__` since fsync come from `unistd.h` library which we can't use in windows so we can try to use fflush function that have a simillar function with it, but it still need more research.
 
 <br>
 Here is the result after compile and run the excutable file in Windows :
@@ -111,4 +113,6 @@ Here is the result after compile and run the excutable file in Windows :
 Result from compile the program and run its excutable file in Linux :
 <img src="linFileC.PNG" alt="for code 1" title="for code 1" width="900" />
 
-The attribute `-D` after the `gcc` command is used to define
+The attribute `-D` after the `gcc` command is stand for define
+
+So that's my experiment to make a program that use POSIX also can be compiled in Windows :)

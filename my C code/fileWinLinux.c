@@ -10,6 +10,7 @@
 
 // #define __POSIX__
 #ifdef __POSIX__
+#define datafd fd
 #define Status 0
 #include <unistd.h>
 #endif
@@ -18,7 +19,8 @@
 #include <io.h>
 #include <math.h>
 #define Status 1
-#define fsync sqrt //change fsync into sqrt to avoid failed to compile
+#define datafd _fd //switch variable that passed since fsync(int) while fflush(FILE)
+#define fsync fflush //change fsync into fflush which have a close function for windows
 #define open _open //using Microsoft POSIX-style low-level IO calls
 #define close _close //using Microsoft POSIX-style low-level IO calls
                      //ref:https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/open-wopen?view=msvc-160
@@ -34,8 +36,7 @@ int main(int argc, char *argv[]) {
     sprintf(buffer, "hello world!\n");
     int rc = write(fd, buffer, strlen(buffer));
     assert(rc == (strlen(buffer)));
-    if(Status == 0) fsync(fd);
-    else fflush(_fd);
+    fsync(datafd);
     close(fd);
     return 0;
 }
