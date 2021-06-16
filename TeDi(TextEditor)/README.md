@@ -9,7 +9,7 @@
 
 I write TeDi text editor in order to fulfill my final assignment with reference to [Build Your Own Text Editor](https://viewsourcecode.org/snaptoken/kilo/). I do a little modification to it which I will explain after I finished writing the program.
 
-In order to use TeDi you need to open this directory in your terminal and execute this command : `$ make`. After that you will find tedi file in your directory. to run it simply type `$ ./tedi [filename]`.
+In order to use TeDi you need to clone this project, open it in your terminal and execute this command : `$ make`. After that you will find tedi file in your directory. to run it simply type `$ ./tedi [filename]`.
 
 There are several shortcut that you need to know :
 1. `ESC` : exit program
