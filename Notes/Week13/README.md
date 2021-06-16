@@ -1,6 +1,6 @@
 # Week 13 Notes
-## FIFO
-FIFO is a named pipe and it is one of the methods for intern-process communication. This FIFO can life in the process as long as the system is up and it can be deleted if no longer used.
+## FIFO Named Pipe
+FIFO is a named pipe and it is one of the methods for intern-process communication. In FIFO any number of readers and writers may use the pipe. This FIFO can life in the process as long as the system is up and it can be deleted if no longer used.
 
 This special file can be entered into the filesystem by calling mkfifo(). This function need `sys/types.h` and `sys/stat.h` as its headers. To create the FIFO file in our program we can type the following code
 
@@ -30,3 +30,12 @@ $ testing
 
 [1]+  Done                    cat < mypipe2
 ```
+
+## Why Use FIFO?
+There's some situation that you might need FIFO to solve the problem. One situation you've got a backup script that runs via [cron](https://github.com/NubletZ/LinuxOS_Notes/tree/nubletz/109%E4%B8%8B/Week-15#crontab), and after it's finished, you need to shutdown the system. If you shutdown  from the backup script, then cron will never sees the backup script finish, so it never sends out the e-mail containing the output from the backup job. You can run another cron job that will shutdown the system at the time after the backup is "supposed" to finish, but this way have a chance that the cron will shutting down too early and will need you to set a larger value for delay time.
+
+By using a FIFO, you can start the backup and the shutdown cron jobs at the same time and have the shutdown just wait untill the backkup writes to the FIFO. When cron job reads something from pipe, it will pauses for a few minutes to send the e-mail, and then it will shut down the system.
+
+In another case if you have a backup that wakes up every hour or so and reads a named pipe to see if it should run. You could write the names of the files that you want backed up to the pipe so the backup doesn't have to check everything.
+
+> This part take reference to [Linux Journal - Using Named Pipes (FIFOs) with Bash](https://www.linuxjournal.com/content/using-named-pipes-fifos-bash)
