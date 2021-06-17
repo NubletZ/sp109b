@@ -61,6 +61,7 @@ struct editorConfig {
   int dirty; //detect whether the text loaded in editor is differs from origin file
   int escstat; //flag if user press esc
   int savewarnstat; //esc but file has been modified
+  int catmessage; //cursor at message
   int esc27; //flag to devide between esc key press and esc return
   char message[80]; //define message at the bottom
   time_t message_time;
@@ -73,7 +74,7 @@ struct editorConfig E;
 /** prototypes ***/
 
 void editorRefreshScreen();
-char *editorPrompt(char *prompt);
+char *editorPrompt(char *prompt, void (*callback)(char *, int));
 
 /*** terminal ***/
 
@@ -271,6 +272,19 @@ int editorRowCxToRx(erow *row, int cx) {
   return rx;
 }
 
+int editorRowRxToCx(erow *row, int rx) {
+  int cur_rx = 0;
+  int cx;
+  for (cx = 0; cx < row->size; cx++) {
+    if (row->chars[cx] == '\t')
+      cur_rx += (TEDI_TAB_STOP - 1) - (cur_rx % TEDI_TAB_STOP);
+    cur_rx++;
+
+    if (cur_rx > rx) return cx;
+  }
+  return cx;
+}
+
 void editorUpdateRow(erow *row) {
   int tabs = 0;
   int j;
@@ -448,14 +462,15 @@ void editorSave() {
   int tempcy = E.cy;
   int temprx = E.rx;
   if(E.filename == NULL) {
+    E.catmessage = 1;
     E.esc27 = 0;
-    E.cy = E.screencols+2;
-    E.rx = 9;
-    E.filename = editorPrompt("Save as: %s (ESC to cancel)");
+    //E.cy = E.screencols+2;
+    E.filename = editorPrompt("Save as: %s (ESC to cancel)", NULL);
     if (E.filename == NULL) {
       setMessage(0, "Save aborted");
       E.cy = tempcy;
       E.rx = temprx;
+      E.catmessage = 0;
       return;
     }
   }
@@ -473,17 +488,79 @@ void editorSave() {
         char msg[80];
         snprintf(msg, sizeof(msg), "-- %d bytes written to disk --", len);
         setMessage(0, msg);
-        E.cy = tempcy;
-        E.rx = temprx;
         return;
       }
     }
     close(fd);
   }
 
-  
   free(buf);
   setMessage(0, "Can't save the file! I/O error: %s", strerror(errno));
+}
+
+/*** find ***/
+
+
+
+void editorFindCallback(char *query, int key) {
+  static int last_match = -1;
+  static int direction = 1;
+
+  if (key == '\r' || key == '\x1b') {
+    last_match = -1;
+    direction = 1;
+    return;
+  }
+  else if (key == ARROW_RIGHT || key == ARROW_DOWN) {
+    direction = 1;
+  }
+  else if (key == ARROW_LEFT || key == ARROW_UP) {
+    direction = -1;
+  }
+  else {
+    last_match = -1;
+    direction = 1;
+  }
+
+  if (last_match == -1) direction = 1;
+  int current = last_match;
+  int i;
+  for (i = 0; i < E.numrows; i++) {
+    current += direction;
+    if (current == -1) current = E.numrows -1;
+    else if (current == E.numrows) current = 0;
+
+    erow *row = &E.row[current];
+    char *match = strstr(row->render, query);
+    if (match) {
+      last_match = current;
+      E.cy = current;
+      E.cx = editorRowRxToCx(row, match - row->render);
+      E.rx = E.cx;
+
+      E.rowoff = E.cy;
+      break;
+    }
+  }
+}
+
+void editorFind() {
+  int saved_rx = E.rx;
+  int saved_cy = E.cy;
+  int saved_coloff = E.coloff;
+  int saved_rowoff = E.rowoff;
+
+  char *query = editorPrompt("Search: %s (ESC)", editorFindCallback);
+
+  if (query) {
+    free(query);
+  }
+  else {
+    E.rx = saved_rx;
+    E.cy = saved_cy;
+    E.coloff = saved_coloff;
+    E.rowoff = saved_rowoff;
+  }
 }
 
 /*** append buffer ***/
@@ -509,23 +586,23 @@ void abFree(struct abuf *ab) {
 /*** output ***/
 
 void editorScroll() {
-  if (!E.savewarnstat) {
-  E.rx = 0;
-  if (E.cy < E.numrows) {
-    E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
-  }
-  if (E.cy < E.rowoff) {
-    E.rowoff = E.cy;
-  }
-  if (E.cy >= E.rowoff + E.screenrows - 1) {
-    E.rowoff = E.cy - E.screenrows + 2;
-  }
-  if (E.rx < E.coloff) {
-     E.coloff = E.rx;
-  }
-  if (E.rx >= E.coloff + E.screencols) {
-    E.coloff = E.rx - E.screencols + 1;
-  }
+  if (!E.catmessage) {
+    E.rx = 0;
+    if (E.cy < E.numrows) {
+      E.rx = editorRowCxToRx(&E.row[E.cy], E.cx);
+    }
+    if (E.cy < E.rowoff) {
+      E.rowoff = E.cy;
+    }
+    if (E.cy >= E.rowoff + E.screenrows - 1) {
+      E.rowoff = E.cy - E.screenrows + 2;
+    }
+    if (E.rx < E.coloff) {
+       E.coloff = E.rx;
+    }
+    if (E.rx >= E.coloff + E.screencols) {
+      E.coloff = E.rx - E.screencols + 1;
+    }
   }
 }
 
@@ -607,7 +684,16 @@ H command is used to position the cursor, in the line above we set cursor positi
 
 /*** input ***/
 
-char *editorPrompt(char *prompt) {
+char *editorPrompt(char *prompt, void (*callback)(char *, int)) {
+  int tempcy = E.cy;
+  int temprx = E.rx;
+
+  //E.catmessage = 1;
+  if (E.catmessage) {
+    E.rx = 9;
+    E.cy = E.screencols+2;
+  }
+
   size_t bufsize = 128;
   char *buf = malloc(bufsize);
 
@@ -621,18 +707,30 @@ char *editorPrompt(char *prompt) {
     int c = editorReadKey();
     if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
       if (buflen != 0) buf[--buflen] = '\0';
-      if (E.rx > 9) E.rx--;
+      if (E.rx > 9 && E.catmessage) E.rx--;
     }
     else if (c == '\x1b') {
       setMessage(1, NULL);
+      if (callback) callback(buf, c);
       free(buf);
-      E.esc27 = 1;
+      //E.esc27 = 1;
+      if (E.catmessage) {
+        E.cy = tempcy;
+        E.rx = temprx;
+      }
+      E.catmessage = 0;
       return NULL;
     }
     else if (c == '\r') {
       if (buflen != 0) {
         setMessage(1, NULL);
-        E.esc27 = 1;
+        if (callback) callback(buf, c);
+        //E.esc27 = 1;
+        if (E.catmessage) {
+          E.cy = tempcy;
+          E.rx = temprx;
+        }
+        E.catmessage = 0;
         return buf;
       }
     }
@@ -643,10 +741,15 @@ char *editorPrompt(char *prompt) {
       }
       buf[buflen++] = c;
       buf[buflen] = '\0';
-      E.rx++;
+      if (E.catmessage) E.rx++;
     }
-    setMessage(1, NULL);
+    if (callback) callback(buf, c);
   }
+  if (E.catmessage) {
+    E.cy = tempcy;
+    E.rx = temprx;
+  }
+  setMessage(1, NULL);
 }
 
 void editorMoveCursor(int key) {
@@ -714,38 +817,8 @@ void editorProcessKeypress() {
         break;
     }
   }
-  if (E.escstat) {
-    switch (c) {
-      case 'y':
-        write(STDOUT_FILENO, "\x1b[2J", 4);
-        write(STDOUT_FILENO, "\x1b[H", 3);
-        exit(0);
-        break;
-      case 'n':
-        setMessage(1, NULL);
-        E.escstat = 0;
-        break;
-    }
-  }
-  if (E.savewarnstat) {
-    switch (c) {
-      case 'y':
-        editorSave();
-        editorRefreshScreen();
-        sleep(2); //sleep for 2s before quitwrite(STDOUT_FILENO, "\x1b[2J", 4);
-      case 'n':
-        write(STDOUT_FILENO, "\x1b[2J", 4);
-        write(STDOUT_FILENO, "\x1b[H", 3);
-        E.savewarnstat = 0;
-        exit(0);
-        break;
-     case 'c':
-        setMessage(1, NULL);
-        E.savewarnstat = 0;
-        break;
-    }
-  }
-  else if (!E.escstat && !E.savewarnstat) {
+  
+  if (!E.escstat && !E.savewarnstat) {
     switch (c) {
       case '\r':
         editorInsertNewline();
@@ -769,6 +842,10 @@ void editorProcessKeypress() {
         if (E.cy < E.numrows) {
           E.cx = E.row[E.cy].size;
         }
+        break;
+
+      case CTRL_KEY('f'):
+        editorFind();
         break;
 
       case BACKSPACE:
@@ -805,6 +882,39 @@ void editorProcessKeypress() {
         break;
     }
   }
+
+  if (E.escstat) {
+    switch (c) {
+      case 'y':
+        write(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[H", 3);
+        exit(0);
+        break;
+      case 'n':
+        setMessage(1, NULL);
+        E.escstat = 0;
+        break;
+    }
+  }
+
+  if (E.savewarnstat) {
+    switch (c) {
+      case 'y':
+        editorSave();
+        editorRefreshScreen();
+        sleep(2); //sleep for 2s before quitwrite(STDOUT_FILENO, "\x1b[2J", 4);
+      case 'n':
+        write(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[H", 3);
+        E.savewarnstat = 0;
+        exit(0);
+        break;
+     case 'c':
+        setMessage(1, NULL);
+        E.savewarnstat = 0;
+        break;
+    }
+  }
 }
 
 /*** init ***/
@@ -823,6 +933,7 @@ void initEditor() {
   E.escstat = 0;
   E.esc27 = 0;
   E.savewarnstat = 0;
+  E.catmessage = 0;
 
 //initialize screenrows and screencols in E struct
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
@@ -832,7 +943,7 @@ int main(int argc, char *argv[]) {
   enableRawMode();
   initEditor();
   if (argc >= 2) {
-    editorOpen(argv[1]);
+    editorOpen(argv[1]);                       
   }
   else setMessage(1, NULL);
 
