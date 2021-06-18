@@ -14,6 +14,7 @@ In order to use TeDi you need to clone this project, open it in your terminal an
 There are several shortcut that you need to know :
 1. `ESC` : exit program
 2. `Ctrl` + `s` : SaveAs/Save file
+3. `Ctrl` + `f` : find strings in file
 
 Up until now, here is some function list in TeDi :
 1. Make new empty file by typing `$ ./tedi`
@@ -24,3 +25,4 @@ Up until now, here is some function list in TeDi :
 6. Status that show if you have done some modification into your file
 7. If you have modified the file but want to leave the program there would be a message to ask you whether you want to save the file or not.
 8. Status that show your current cursor row position
+9. Color highlight on certain filetype
