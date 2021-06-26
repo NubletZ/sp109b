@@ -1127,6 +1127,11 @@ void editorProcessKeypress() {
         editorSave();
         editorRefreshScreen();
         sleep(2); //sleep for 2s before quitwrite(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[2J", 4);
+        write(STDOUT_FILENO, "\x1b[H", 3);
+        E.savewarnstat = 0;
+        exit(0);
+        break;
       case 'n':
         write(STDOUT_FILENO, "\x1b[2J", 4);
         write(STDOUT_FILENO, "\x1b[H", 3);
