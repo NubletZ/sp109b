@@ -8,7 +8,7 @@
 > * Reference : https://viewsourcecode.org/snaptoken/kilo/
 > * This program is still on progress, the basic functions have finished but I still need to add several features soon.
 
-I write TeDi text editor in order to fulfill my final assignment with reference to [Build Your Own Text Editor](https://viewsourcecode.org/snaptoken/kilo/). I do a little modification to it and write a Makefile to enable Tedi to be installed in your system in root mode which I will explain below.
+I write TeDi text editor in order to fulfill my final assignment with reference to [Build Your Own Text Editor](https://viewsourcecode.org/snaptoken/kilo/). I do a little modification to it and write a Makefile to enable Tedi to be installed in your system in root mode which I will explain [below](https://github.com/NubletZ/sp109b/blob/nubletz/TeDi(TextEditor)/README.md#part-that-i-modified).
 
 In order to use TeDi you need to clone this project, open it in your terminal and execute this command : `$ make`. After that you will find tedi file in your directory. to run it simply type `$ ./tedi [filename]` if you are root you have an option to install Tedi in your system, this way you'll able to run TeDi in any directory by simply type `tedi [filename]`.
 
