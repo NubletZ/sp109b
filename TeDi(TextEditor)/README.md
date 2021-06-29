@@ -144,3 +144,4 @@ uninstall:
 	fi
 ```
 
+Here is the link for [my notes](https://github.com/NubletZ/sp109b/blob/nubletz/Notes/qimoNotes.md) during I write this code. But it's so messy, maybe I will tidy it up later to make it readable(?) haha. Thank you and please let me know if you found some mistake or something else. I'm still a student that need to learn and learn :)
