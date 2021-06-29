@@ -88,7 +88,7 @@ struct editorConfig {
   int escstat; //flag if user press esc
   int savewarnstat; //esc but file has been modified
   int catmessage; //cursor at message
-  int esc27; //flag to devide between esc key press and esc return
+  int esc27; //flag to differentiate between esc key press and esc return
   char message[80]; //define message at the bottom
   time_t message_time;
   char *filename;
