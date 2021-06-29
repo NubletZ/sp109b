@@ -126,9 +126,9 @@ abAppend(&ab, "\x1b[2J", 4);
 https://www.educative.io/edpresso/how-to-use-the-typedef-struct-in-c
 
 12. Know the structure from memcpy() :
----
+```
 void *memcpy(void *dest, const void * src, size_t n)
----
+```
 Parameters :
 > dest - pointer to the destination array
 > src - pointer to the source of data (file to be copied)
