@@ -14,7 +14,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <fcntl.h>
-
+//adding comment
 /*** defines ***/
 
 #define CTRL_KEY(k) ((k) & 0x1f)
@@ -50,7 +50,8 @@ enum editorHighlight {
   HL_KEYWORD2,
   HL_STRING,
   HL_NUMBER,
-  HL_MATCH
+  HL_MATCH,
+  HL_CPASTE
 };
 
 /*** data ***/
@@ -79,6 +80,9 @@ struct editorConfig {
   int screenrows;
   int screencols;
   int numrows;
+  int cpflag;
+  int cpfirstrx;
+  int cpfirstcy;
   erow *row; //define new name for struct erow
   int dirty; //detect whether the text loaded in editor is differs from origin file
   int escstat; //flag if user press esc
@@ -399,7 +403,8 @@ int editorSyntaxToColor(int hl) {
     case HL_KEYWORD2: return 91; //light red
     case HL_STRING: return 95; //Light Magenta
     case HL_NUMBER: return 32; //green
-    case HL_MATCH: return 33; //yellow
+    case HL_MATCH: return 43; //yellow bg
+    case HL_CPASTE: return 44; //blue bg
     default: return 37; //white
   }
 }
@@ -839,6 +844,7 @@ void editorDrawRows(struct abuf *ab) {
         if (hl[j] == HL_NORMAL) {
           if (current_color != -1) {
             abAppend(ab, "\x1b[39m", 5);
+	    abAppend(ab, "\x1b[49m", 5);
             current_color = -1;
           }
           abAppend(ab, &c[j], 1);
@@ -848,18 +854,21 @@ void editorDrawRows(struct abuf *ab) {
           if (color != current_color) {
             current_color = color;
             char buf[16];
-            int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+	    int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+            if (color == 44) clen = snprintf(buf, sizeof(buf), "\x1b[%dm\x1b[37m", color);
+            if (color < 40 || color > 49 ) clen = snprintf(buf, sizeof(buf), "\x1b[%dm\x1b[49m", color);
             abAppend(ab, buf, clen);
           }
           abAppend(ab, &c[j], 1);
         }
       }
+      abAppend(ab, "\x1b[49m", 5);
       abAppend(ab, "\x1b[39m", 5);
     }
 
     abAppend(ab, "\x1b[K", 3);
 /* -- COMMENT --
-1. 3 in write() means we are writing 4 bytes into terminal, \x1b, [, and K.
+1. 3 in write() means we are writing 3 bytes into terminal, \x1b, [, and K.
 2. \x1b : esc
 3. \x1b[ : escape sequances to instruct terminal to do various text formatting tasks including clearing screen
 4. K : erase part of the current line
@@ -984,7 +993,7 @@ void editorMoveCursor(int key) {
     case ARROW_LEFT:
       if (E.cx != 0) E.cx--;
       else if (E.cy > 0) {//go to end of previous line when E.cx == 0 and key press <
-        setMessage(1, NULL);
+        if (!E.cpflag) setMessage(1, NULL);
         E.cy--;
         E.cx = E.row[E.cy].size;
       }
@@ -996,7 +1005,7 @@ void editorMoveCursor(int key) {
       }
       else if (row && E.cx == row->size && E.cy < temp) {
         //sprintf(E.message, "%d : %d", E.cy, temp);
-        setMessage(1, NULL);
+        if (!E.cpflag) setMessage(1, NULL);
         E.cy++;
         E.cx = 0;
       }
@@ -1004,13 +1013,13 @@ void editorMoveCursor(int key) {
     case ARROW_UP:
       if (E.cy != 0)  {
         E.cy--;
-        setMessage(1, NULL);
+        if (!E.cpflag) setMessage(1, NULL);
       }
       break;
     case ARROW_DOWN:
       if (E.cy < E.numrows - 1) {
         E.cy++;
-        setMessage(1, NULL);
+        if (!E.cpflag) setMessage(1, NULL);
       }
       break;
   }
@@ -1041,9 +1050,20 @@ void editorProcessKeypress() {
         break;
     }
   }
-  
-  if (!E.escstat && !E.savewarnstat) {
+
+  if (!E.escstat && !E.savewarnstat && !E.cpflag) {
     switch (c) {
+      case CTRL_KEY('e'):
+	E.cpflag = 1;
+        E.cpfirstrx = E.rx;
+        E.cpfirstcy = E.cy;
+	setMessage(0, "first cpflag");
+    	/* for test only
+    	char temp[20];
+    	snprintf(temp, sizeof(temp), "-- %d flag--", E.cpflag);
+    	setMessage(0, temp); */
+	break;
+
       case '\r':
         editorInsertNewline();
         break;
@@ -1100,14 +1120,71 @@ void editorProcessKeypress() {
       case '\x1b':
         break;
 
-      default: //allow keyprass that isn't mapped to be inserted into text
+      default: //allow keypress that isn't mapped to be inserted into text
         editorInsertChar(c);
         //sprintf(E.message, "%d : %d", E.cy, temp);
         break;
     }
   }
 
-  if (E.escstat) {
+  else if (E.cpflag) {
+    //setMessage(0, "enter E.cpflag");
+    char temp[20];
+    snprintf(temp, sizeof(temp), "-- %d : %d cpflag--", E.cx, E.rx);
+    setMessage(0, temp);
+    erow *row = &E.row[E.cy];
+    //int temprx = E.rx;
+    switch (c) {
+      case ARROW_UP:
+      case ARROW_DOWN:
+	
+	break;
+
+      case ARROW_LEFT:
+        if (E.rx == 0) {
+          //snprintf(temp, sizeof(temp), "-- %d : %d arl--", E.cy, E.rx);
+          //setMessage(0, temp); editorRefreshScreen(); sleep(4);
+          editorMoveCursor(c);
+          if (E.row[E.cy].hl[E.row[E.cy].rsize-1] == HL_CPASTE) E.row[E.cy].hl[E.row[E.cy].rsize-1] = HL_NORMAL;
+          else row->hl[0] = (row->hl[0] == HL_CPASTE) ? HL_NORMAL : HL_CPASTE;
+          //snprintf(temp, sizeof(temp), "-- %d : %d arl--", E.cy, E.row[E.cy].size);
+          //setMessage(0, temp); editorRefreshScreen(); sleep(4);
+        }
+        editorMoveCursor(c);
+        
+        if (row->hl[E.rx - 1] == HL_CPASTE) row->hl[E.rx - 1] = HL_NORMAL;
+	else if (E.rx != 0) row->hl[E.rx] = (row->hl[E.rx] == HL_CPASTE) ? HL_NORMAL : HL_CPASTE;
+	//editorRefreshScreen();
+        break;
+
+      case ARROW_RIGHT:
+        if (E.rx == row->rsize - 1) {
+          //snprintf(temp, sizeof(temp), "-- %d : %d arl--", E.cy, E.rx);
+          //setMessage(0, temp); editorRefreshScreen(); sleep(4);
+          editorMoveCursor(c);
+          if (E.row[E.cy+1].hl[0] == HL_CPASTE) E.row[E.cy+1].hl[0] = HL_NORMAL;
+          else row->hl[row->rsize-1] = (row->hl[row->rsize-1] == HL_CPASTE) ? HL_NORMAL : HL_CPASTE;
+          //snprintf(temp, sizeof(temp), "-- %d : %d arl--", row->rsize, E.rx);
+          //setMessage(0, temp); editorRefreshScreen(); sleep(4);
+        }
+        editorMoveCursor(c);
+        if (row->hl[E.rx + 1] == HL_CPASTE) row->hl[E.rx + 1] = HL_NORMAL;
+	else if (E.rx != row->rsize - 1) row->hl[E.rx] = (row->hl[E.rx] == HL_CPASTE) ? HL_NORMAL : HL_CPASTE;
+        //row->hl[E.rx - 1] = HL_NORMAL;
+	//editorRefreshScreen();
+        break;
+
+      case CTRL_KEY('e'):
+	E.cpflag = 0;
+	printf("\x1b[0m");
+        editorSelectSyntaxHighlight();
+	setMessage(1, NULL);
+        break;
+    }
+  }
+  
+
+  else if (E.escstat) {
     switch (c) {
       case 'y':
         write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -1121,7 +1198,7 @@ void editorProcessKeypress() {
     }
   }
 
-  if (E.savewarnstat) {
+  else if (E.savewarnstat) {
     switch (c) {
       case 'y':
         editorSave();
@@ -1164,6 +1241,9 @@ void initEditor() {
   E.savewarnstat = 0;
   E.catmessage = 0;
   E.syntax = NULL;
+  E.cpflag = 0;
+  E.cpfirstrx = 0;
+  E.cpfirstcy = 0;
 
 //initialize screenrows and screencols in E struct
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
@@ -1184,3 +1264,6 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+//adding comment
+//adding comment 2

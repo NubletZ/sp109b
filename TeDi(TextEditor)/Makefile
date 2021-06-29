@@ -8,7 +8,6 @@ $(VERBOSE).SILENT:
 all: install
 
 install: tedi.c
-	runner=`whoami` ; \
 	if [[ $EUID -ne 0 ]] ; \
 	then \
 		echo "You are not root" ; \
