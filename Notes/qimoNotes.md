@@ -130,9 +130,9 @@ https://www.educative.io/edpresso/how-to-use-the-typedef-struct-in-c
 void *memcpy(void *dest, const void * src, size_t n)
 ```
 Parameters :
-> dest - pointer to the destination array
-> src - pointer to the source of data (file to be copied)
-> n - number of bytes to be copied
+> * dest - pointer to the destination array
+> * src - pointer to the source of data (file to be copied)
+> * n - number of bytes to be copied
 
 13. getline() is useful for reading lines from a file when we don’t know how much memory to allocate for each line. It takes care of memory management for you. First, we pass it a null line pointer and a linecap (line capacity) of 0. That makes it allocate new memory for the next line it reads, and set line to point to the memory, and set linecap to let you know how much memory it allocated.
 
