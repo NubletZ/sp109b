@@ -4,7 +4,7 @@
 > * 作者 : 魏美亞
 > * 學號 : 110810538
 > * 作品 : 並非100%原創
-> * Demo : 
+> * Demo : https://github.com/NubletZ/sp109b/blob/nubletz/Notes/demoVideo.md#demo-teditext-editor
 > * Reference : https://viewsourcecode.org/snaptoken/kilo/
 > * This program is still on progress, the basic functions have finished but I still need to add several features soon.
 
@@ -18,6 +18,12 @@ There are several shortcut that you need to know :
 3. `Ctrl` + `f` : find strings in file
 
 I'm still doing the function which enable user to select some string and use `ctrl + c` to copy the string and paste it using `ctrl + v`. Up until now for this function I have made a progress until user can highlight the string that they want to copy. The user need to press `ctrl + e` to start choosing the string and press `ctrl + e` again to stop.
+<br>
+
+![gifDemoHL](https://user-images.githubusercontent.com/62128475/123844111-362fb880-d945-11eb-89e0-b5c492ddef75.gif)
+
+<br>
+
 
 Up until now, here is some function list in TeDi :
 1. Make new empty file by typing `$ ./tedi` or `$ tedi`
