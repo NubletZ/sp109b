@@ -1,0 +1,4 @@
+You can use tedi to write a new file
+you can type the following commands to create a new file :
+tedi
+or ./tedi if you install tedi in your current directory
