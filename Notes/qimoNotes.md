@@ -72,15 +72,15 @@ memset
 3. O_CREAT
 
 ## ASCII CODE
-27 : esc
-9 : tab
-10 : enter (because of ICRNL， enter will be read as 13)
-127 : backspace
+* 27 : esc
+* 9 : tab
+* 10 : enter (because of ICRNL， enter will be read as 13)
+* 127 : backspace
 
 ## short key
-Ctrl-C : terminate program
-Ctrl-V : wait for input
-Ctrs-S : stop data from being transmitted to the terminal until you press Ctrl-Q
+* `Ctrl-C` : terminate program
+* `Ctrl-V` : wait for input
+* `Ctrs-S` : stop data from being transmitted to the terminal until you press Ctrl-Q
 
 ## important
 1. because we turn off OPOST for all output processing, so we need to write "\r\n" whenever we want to start a new line
@@ -112,13 +112,13 @@ in our code most of write() are changed into abAppend, here is the reason https:
 ```
 abAppend(&ab, "\x1b[2J", 4);
 ```
-/* -- COMMENT --
-1. 4 in write() means we are writing 4 bytes into terminal, \x1b, [, 2, and J.
-2. \x1b : esc
-3. \x1b[ : escape sequances to instruct terminal to do various text formatting tasks including clearing screen
-4. J : command to clear the screen
-5. 2 : means to clear the entire screen
-*/
+-- COMMENT --
+> * 4 in write() means we are writing 4 bytes into terminal, \x1b, [, 2, and J.
+> * \x1b : esc
+> * \x1b[ : escape sequances to instruct terminal to do various text formatting tasks including clearing screen
+> * J : command to clear the screen
+> * 2 : means to clear the entire screen
+
 
 10. The Home key could be sent as <esc>[1~, <esc>[7~, <esc>[H, or <esc>OH. Similarly, the End key could be sent as <esc>[4~, <esc>[8~, <esc>[F, or <esc>OF. Let’s handle all of these cases.
 
