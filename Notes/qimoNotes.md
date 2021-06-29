@@ -1,75 +1,75 @@
 ## Library list
 -- unistd.h --
-1. read()
-2. write()
-3. STDOUT_FILENO
-4. ftruncate()
-5. close()
+1. `read()`
+2. `write()`
+3. `STDOUT_FILENO`
+4. `ftruncate()`
+5. `close()`
 
 -- termios.h --
-1. struct termios
-2. tcgetattr()
-3. tcsetattr()
-4. ECHO
-5. TCSAFLUSH
-6. ISIG
-7. IXON
-8. ICANON
-9. IEXTEN
-10. ICRNL
-11. OPOST
-12. BRKINT, INPCK, ISTRIP, CS8 (this several flags are considered to be part of enabling "raw mode") for more info read https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html (step 15)
+1. `struct termios`
+2. `tcgetattr()`
+3. `tcsetattr()`
+4. `ECHO`
+5. `TCSAFLUSH`
+6. `ISIG`
+7. `IXON`
+8. `ICANON`
+9. `IEXTEN`
+10. `ICRNL`
+11. `OPOST`
+12. `BRKINT`, `INPCK`, `ISTRIP`, `CS8` (this several flags are considered to be part of enabling "raw mode") for more info read https://viewsourcecode.org/snaptoken/kilo/02.enteringRawMode.html (step 15)
 
 -- stdlib.h --
-1. atexit()
-2. exit()
-3. realloc()
-4. free()
-5. malloc()
+1. `atexit()`
+2. `exit()`
+3. `realloc()`
+4. `free()`
+5. `malloc()`
 
 -- ctype.h --
-1. iscntrl()
+1. `iscntrl()`
 
 -- stdio.h --
-1. printf()
-2. perror()
-3. sscanf()
-4. snprintf()
-5. FILE
-6. fopen()
-7. getline()
+1. `printf()`
+2. `perror()`
+3. `sscanf()`
+4. `snprintf()`
+5. `FILE`
+6. `fopen()`
+7. `getline()`
 
 -- errno.h --
-1. errno
-2. EAGAIN
+1. `errno`
+2. `EAGAIN`
 
 -- sys/ioctl.h --
-1. ioctl()
-2. TIOCGWINSZ
-3. struct winsize
+1. `ioctl()`
+2. `TIOCGWINSZ`
+3. `struct winsize`
 
 -- string.h --
-1. memcpy()
-2. strlen()
-3. strdup() : makes copy of the given string, allocating the required memory and assuming you will free() that memory.
-4. memmove() : like memcpy(), but is safe to use when the source and destination arrays overlap.
-5. strerror() : is like perror() (which we use in die()), but it takes the errno value as an argument and returns the human-readable string for that error code, so that we can make the error a part of the status message we display to the user.
-6. strstr(const char *haystack, const char *needle) : haystack is the main C string to be scanned. Needle is the small string to be searched with-in haystack string
+1. `memcpy()`
+2. `strlen()`
+3. `strdup()` : makes copy of the given string, allocating the required memory and assuming you will free() that memory.
+4. `memmove()` : like memcpy(), but is safe to use when the source and destination arrays overlap.
+5. `strerror()` : is like perror() (which we use in die()), but it takes the errno value as an argument and returns the human-readable string for that error code, so that we can make the error a part of the status message we display to the user.
+6. `strstr(const char *haystack, const char *needle)` : haystack is the main C string to be scanned. Needle is the small string to be searched with-in haystack string
 memset
-7. strchr() : looks for the first occurence of a character in a string and returns a pointer to the matching character in the string
-8. strrchr() : returns a pointer to the last occurrence of a character in a string
-9. strcmp() : returns 0 if two given strings are equal
+7. `strchr()` : looks for the first occurence of a character in a string and returns a pointer to the matching character in the string
+8. `strrchr()` : returns a pointer to the last occurrence of a character in a string
+9. `strcmp()` : returns 0 if two given strings are equal
 
 -- sys/types.h --
-1. ssize_t
+1. `ssize_t`
 
 -- time.h --
-1. time_t
+1. `time_t`
 
 -- fcntl.h --
-1. open()
-2. O_RDWR
-3. O_CREAT
+1. `open()`
+2. `O_RDWR`
+3. `O_CREAT`
 
 ## ASCII CODE
 * 27 : esc
